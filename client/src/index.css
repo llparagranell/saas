@@ -1,0 +1,40 @@
+@import url("https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap");
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+
+@layer base {
+  * {
+    @apply border-slate-800;
+  }
+  html {
+    font-family: "Plus Jakarta Sans", ui-sans-serif, system-ui;
+  }
+  body {
+    @apply bg-white text-slate-900 transition-colors duration-300;
+    min-height: 100vh;
+  }
+  .dark body {
+    @apply bg-ink text-mist;
+  }
+}
+
+@layer components {
+  .glass-panel {
+    @apply bg-white/80 backdrop-blur-xl border border-slate-200;
+  }
+  .dark .glass-panel {
+    @apply bg-carbon/80 border-slate-800/80;
+  }
+  .page-shell {
+    @apply min-h-screen bg-gradient-to-br from-slate-50 via-slate-100 to-slate-200;
+  }
+  .dark .page-shell {
+    @apply bg-gradient-to-br from-ink via-[#0e141b] to-[#111827];
+  }
+  .muted {
+    @apply text-slate-400;
+  }
+}

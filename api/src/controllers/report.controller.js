@@ -6,10 +6,17 @@ const getMonthKey = (date) => `${date.getFullYear()}-${date.getMonth()}`
 
 export const adminSummary = async (req, res, next) => {
   try {
+    if (!req.user?.gym) {
+      return res.status(400).json({ message: "Admin is not assigned to a gym" })
+    }
+
     const [members, trainers, profiles] = await Promise.all([
-      User.countDocuments({ role: "member" }),
-      User.countDocuments({ role: "trainer" }),
-      MemberProfile.find({ membershipPlan: { $ne: null } }).populate("membershipPlan", "price")
+      User.countDocuments({ role: "member", gym: req.user.gym }),
+      User.countDocuments({ role: "trainer", gym: req.user.gym }),
+      MemberProfile.find({ membershipPlan: { $ne: null }, gym: req.user.gym }).populate(
+        "membershipPlan",
+        "price"
+      )
     ])
 
     const revenue = profiles.reduce((total, profile) => {
@@ -18,6 +25,7 @@ export const adminSummary = async (req, res, next) => {
     }, 0)
 
     const attendanceToday = await Attendance.countDocuments({
+      gym: req.user.gym,
       date: { $gte: new Date(new Date().setHours(0, 0, 0, 0)) }
     })
 
@@ -36,6 +44,10 @@ export const adminSummary = async (req, res, next) => {
 
 export const revenueByMonth = async (req, res, next) => {
   try {
+    if (!req.user?.gym) {
+      return res.status(400).json({ message: "Admin is not assigned to a gym" })
+    }
+
     const now = new Date()
     const monthStarts = Array.from({ length: 6 }, (_, index) => {
       const d = new Date(now.getFullYear(), now.getMonth() - (5 - index), 1)
@@ -45,6 +57,7 @@ export const revenueByMonth = async (req, res, next) => {
     const firstMonth = monthStarts[0]
 
     const profiles = await MemberProfile.find({
+      gym: req.user.gym,
       membershipPlan: { $ne: null },
       $or: [{ startDate: { $gte: firstMonth } }, { createdAt: { $gte: firstMonth } }]
     }).populate("membershipPlan", "price")

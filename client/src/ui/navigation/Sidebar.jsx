@@ -2,6 +2,8 @@ import { NavLink } from "react-router-dom"
 import { Dumbbell, Users, UserCog, CalendarCheck, CreditCard, ChartBar, NotebookText, HeartPulse, Salad, ClipboardList } from "lucide-react"
 import { useAuth } from "../../context/AuthContext.jsx"
 
+const superAdminLinks = [{ to: "/app/super-admin", label: "Gyms", icon: ChartBar }]
+
 const adminLinks = [
   { to: "/app/dashboard", label: "Dashboard", icon: ChartBar },
   { to: "/app/members", label: "Members", icon: Users },
@@ -33,8 +35,17 @@ const linkStyles = ({ isActive }) =>
   }`
 
 export default function Sidebar({ mobileOpen = false, onClose = () => {} }) {
-  const { role } = useAuth()
-  const links = role === "trainer" ? trainerLinks : role === "member" ? memberLinks : adminLinks
+  const { role, user } = useAuth()
+  const gymLabel =
+    role === "super_admin" ? "Platform Admin" : user?.gymName || "Your Gym"
+  const links =
+    role === "super_admin"
+      ? superAdminLinks
+      : role === "trainer"
+        ? trainerLinks
+        : role === "member"
+          ? memberLinks
+          : adminLinks
 
   return (
     <>
@@ -57,7 +68,7 @@ export default function Sidebar({ mobileOpen = false, onClose = () => {} }) {
             <Dumbbell size={20} />
           </div>
           <div>
-            <p className="font-display text-lg font-semibold">Atlas Gym</p>
+            <p className="font-display text-lg font-semibold">{gymLabel}</p>
             <p className="text-xs text-slate-500 dark:text-slate-400">Management OS</p>
           </div>
         </div>

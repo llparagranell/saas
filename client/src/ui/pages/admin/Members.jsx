@@ -9,6 +9,17 @@ import Select from "../../components/Select.jsx"
 import { useAuth } from "../../../context/AuthContext.jsx"
 
 const API_BASE = import.meta.env.VITE_API_URL || ""
+const formatDateInput = (date) => date.toISOString().split("T")[0]
+const getTodayDate = () => formatDateInput(new Date())
+
+const addMonthsToDate = (dateString, monthsToAdd) => {
+  if (!dateString || !monthsToAdd) return ""
+  const start = new Date(`${dateString}T00:00:00`)
+  if (Number.isNaN(start.getTime())) return ""
+  const end = new Date(start)
+  end.setMonth(end.getMonth() + Number(monthsToAdd))
+  return formatDateInput(end)
+}
 
 export default function Members() {
   const { token } = useAuth()
@@ -33,7 +44,7 @@ export default function Members() {
     password: "",
     membershipPlan: "",
     trainer: "",
-    startDate: "",
+    startDate: getTodayDate(),
     endDate: "",
     heightCm: "",
     weightKg: "",
@@ -129,6 +140,24 @@ export default function Members() {
     return () => controller.abort()
   }, [showForm, token])
 
+  useEffect(() => {
+    if (!showForm) return
+
+    setForm((prev) => {
+      const startDate = prev.startDate || getTodayDate()
+      if (!prev.membershipPlan) {
+        return { ...prev, startDate }
+      }
+
+      const selectedPlan = plans.find((plan) => plan._id === prev.membershipPlan)
+      const endDate = selectedPlan?.durationMonths
+        ? addMonthsToDate(startDate, selectedPlan.durationMonths)
+        : prev.endDate
+
+      return { ...prev, startDate, endDate }
+    })
+  }, [showForm, plans])
+
   const columns = [
     { key: "name", label: "Member" },
     { key: "plan", label: "Plan" },
@@ -159,7 +188,22 @@ export default function Members() {
 
   const handleChange = (event) => {
     const { name, value } = event.target
-    setForm((prev) => ({ ...prev, [name]: value }))
+    setForm((prev) => {
+      const next = { ...prev, [name]: value }
+
+      if (name === "membershipPlan" || name === "startDate") {
+        const selectedPlanId = name === "membershipPlan" ? value : prev.membershipPlan
+        const selectedStartDate = name === "startDate" ? value : prev.startDate
+        const selectedPlan = plans.find((plan) => plan._id === selectedPlanId)
+
+        next.endDate =
+          selectedPlan?.durationMonths && selectedStartDate
+            ? addMonthsToDate(selectedStartDate, selectedPlan.durationMonths)
+            : ""
+      }
+
+      return next
+    })
   }
 
   const handleSubmit = async (event) => {
@@ -215,7 +259,7 @@ export default function Members() {
         password: "",
         membershipPlan: "",
         trainer: "",
-        startDate: "",
+        startDate: getTodayDate(),
         endDate: "",
         heightCm: "",
         weightKg: "",

@@ -7,6 +7,13 @@ export default function Topbar({ onMenuToggle }) {
   const { theme, toggleTheme } = useTheme()
   const { user, logout } = useAuth()
   const navigate = useNavigate()
+  const gymName = user?.gymName || (user?.role === "super_admin" ? "Platform" : "Your Gym")
+  const roleOptions = [
+    { value: "super_admin", label: "Super admin view" },
+    { value: "admin", label: "Admin view" },
+    { value: "trainer", label: "Trainer view" },
+    { value: "member", label: "Member view" }
+  ]
 
   const handleRoleChange = (event) => {
     const nextRole = event.target.value
@@ -31,7 +38,7 @@ export default function Topbar({ onMenuToggle }) {
           </button>
           <div>
             <p className="text-xs uppercase tracking-[0.3em] text-slate-500 dark:text-slate-400">
-              Atlas OS
+              {gymName}
             </p>
             <h2 className="font-display text-xl font-semibold sm:text-2xl">Welcome back, {user?.name}</h2>
           </div>
@@ -43,9 +50,11 @@ export default function Topbar({ onMenuToggle }) {
             onChange={handleRoleChange}
             className="min-w-[10rem] flex-1 rounded-xl border border-slate-300 bg-slate-100 px-3 py-2 text-sm dark:border-slate-800 dark:bg-slate-900/60 sm:flex-none"
           >
-            <option value="admin">Admin view</option>
-            <option value="trainer">Trainer view</option>
-            <option value="member">Member view</option>
+            {roleOptions.map((option) => (
+              <option key={option.value} value={option.value}>
+                {option.label}
+              </option>
+            ))}
           </select>
 
           <button

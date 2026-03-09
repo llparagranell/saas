@@ -600,7 +600,7 @@ export default function TrainerPlans() {
                 )}
               </div>
             </div>
-          )}
+         )}
         </Card>
       </div>
     </div>

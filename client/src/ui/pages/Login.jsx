@@ -68,7 +68,7 @@ export default function Login() {
         Don&apos;t have an account? Register
       </button>
       <p className="text-xs text-slate-400">
-        Your role (admin, trainer, member) is determined by the backend account associated with your
+        Your role (super_admin, admin, trainer, member) is determined by the backend account associated with your
         email.
       </p>
     </form>

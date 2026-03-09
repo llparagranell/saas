@@ -18,6 +18,8 @@ import MemberDiet from "../ui/pages/member/MemberDiet.jsx"
 import MemberAttendance from "../ui/pages/member/MemberAttendance.jsx"
 import TrainerMembers from "../ui/pages/trainer/TrainerMembers.jsx"
 import TrainerPlans from "../ui/pages/trainer/TrainerPlans.jsx"
+import SuperAdminGyms from "../ui/pages/superadmin/SuperAdminGyms.jsx"
+import Home from "../ui/pages/public/Home.jsx"
 import { useAuth } from "../context/AuthContext.jsx"
 
 const ProtectedRoute = ({ children }) => {
@@ -26,9 +28,21 @@ const ProtectedRoute = ({ children }) => {
   return children
 }
 
+const RoleRoute = ({ roles, children }) => {
+  const { role } = useAuth()
+  if (!roles.includes(role)) return <Navigate to="/app/dashboard" replace />
+  return children
+}
+
 export default function AppRoutes() {
+  const { role } = useAuth()
+  const dashboardElement =
+    role === "super_admin" ? <SuperAdminGyms /> : role === "trainer" ? <TrainerHome /> : role === "member" ? <MemberHome /> : <AdminDashboard />
+
   return (
     <Routes>
+      <Route path="/" element={<Home />} />
+
       <Route element={<AuthLayout />}>
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
@@ -43,27 +57,27 @@ export default function AppRoutes() {
         }
       >
         <Route index element={<Navigate to="dashboard" replace />} />
-        <Route path="dashboard" element={<AdminDashboard />} />
-        <Route path="members" element={<Members />} />
-        <Route path="trainers" element={<Trainers />} />
-        <Route path="plans" element={<MembershipPlans />} />
-        <Route path="attendance" element={<Attendance />} />
-        <Route path="payments" element={<Payments />} />
-        <Route path="reports" element={<Reports />} />
+        <Route path="dashboard" element={dashboardElement} />
+        <Route path="members" element={<RoleRoute roles={["admin"]}><Members /></RoleRoute>} />
+        <Route path="trainers" element={<RoleRoute roles={["admin"]}><Trainers /></RoleRoute>} />
+        <Route path="plans" element={<RoleRoute roles={["admin"]}><MembershipPlans /></RoleRoute>} />
+        <Route path="attendance" element={<RoleRoute roles={["admin"]}><Attendance /></RoleRoute>} />
+        <Route path="payments" element={<RoleRoute roles={["admin"]}><Payments /></RoleRoute>} />
+        <Route path="reports" element={<RoleRoute roles={["admin"]}><Reports /></RoleRoute>} />
         <Route path="profile" element={<ProfileSettings />} />
 
-        <Route path="member-home" element={<MemberHome />} />
-        <Route path="member-workouts" element={<MemberWorkouts />} />
-        <Route path="member-diet" element={<MemberDiet />} />
-        <Route path="member-attendance" element={<MemberAttendance />} />
+        <Route path="member-home" element={<RoleRoute roles={["member"]}><MemberHome /></RoleRoute>} />
+        <Route path="member-workouts" element={<RoleRoute roles={["member"]}><MemberWorkouts /></RoleRoute>} />
+        <Route path="member-diet" element={<RoleRoute roles={["member"]}><MemberDiet /></RoleRoute>} />
+        <Route path="member-attendance" element={<RoleRoute roles={["member"]}><MemberAttendance /></RoleRoute>} />
 
-        <Route path="trainer-home" element={<TrainerHome />} />
-        <Route path="trainer-members" element={<TrainerMembers />} />
-        <Route path="trainer-plans" element={<TrainerPlans />} />
+        <Route path="trainer-home" element={<RoleRoute roles={["trainer"]}><TrainerHome /></RoleRoute>} />
+        <Route path="trainer-members" element={<RoleRoute roles={["trainer"]}><TrainerMembers /></RoleRoute>} />
+        <Route path="trainer-plans" element={<RoleRoute roles={["trainer"]}><TrainerPlans /></RoleRoute>} />
+        <Route path="super-admin" element={<RoleRoute roles={["super_admin"]}><SuperAdminGyms /></RoleRoute>} />
       </Route>
 
-      <Route path="/" element={<Navigate to="/app/dashboard" replace />} />
-      <Route path="*" element={<Navigate to="/app/dashboard" replace />} />
+      <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   )
 }

@@ -65,6 +65,11 @@ Frontend: `client/.env`
 
 
 From your backend seed script, you have these users:
+Super Admin: {
+  "email": "owner@gym.local",
+  "password": "Owner@123"
+}
+
 Admin: admin@gym.local / Admin@123
 Trainer: trainer@gym.local / Trainer@123
 Member: member@gym.local / Member@123

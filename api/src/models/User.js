@@ -6,9 +6,10 @@ const userSchema = new mongoose.Schema(
     name: { type: String, required: true, trim: true },
     email: { type: String, required: true, unique: true, lowercase: true },
     phone: { type: String },
+    gym: { type: mongoose.Schema.Types.ObjectId, ref: "Gym" },
     role: {
       type: String,
-      enum: ["admin", "trainer", "member"],
+      enum: ["super_admin", "admin", "trainer", "member"],
       default: "member"
     },
     passwordHash: { type: String, required: true },

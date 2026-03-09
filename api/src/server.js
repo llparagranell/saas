@@ -4,7 +4,7 @@ import { connectDb } from "./config/db.js"
 
 dotenv.config()
 
-const PORT = process.env.PORT || 5000
+const PORT = process.env.PORT || 5000;
 
 const start = async () => {
   await connectDb(process.env.MONGO_URI)

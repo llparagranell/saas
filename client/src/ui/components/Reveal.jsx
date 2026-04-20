@@ -11,6 +11,8 @@ export default function Reveal({
   delayMs = 0,
   once = true,
   y = 12,
+  x = 0,
+  scaleFrom = 1,
   threshold = 0.15,
   rootMargin = "0px 0px -10% 0px",
   ...props
@@ -44,7 +46,7 @@ export default function Reveal({
   }, [once, reduceMotion, rootMargin, threshold])
 
   const styles = [
-    "will-change-transform transition-[opacity,transform] duration-700",
+    "will-change-transform transition-[opacity,transform] duration-700 ease-out",
     visible ? "opacity-100" : "opacity-0",
     className
   ]
@@ -57,7 +59,9 @@ export default function Reveal({
       className={styles}
       style={{
         transitionDelay: `${delayMs}ms`,
-        transform: `translateY(${visible ? 0 : y}px)`,
+        transform: visible
+          ? "translate3d(0, 0, 0) scale(1)"
+          : `translate3d(${x}px, ${y}px, 0) scale(${scaleFrom})`,
         ...props.style
       }}
       {...props}

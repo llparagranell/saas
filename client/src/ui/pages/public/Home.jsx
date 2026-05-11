@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 // ─── Icons (inline SVGs to avoid dependencies) ───────────────────────────────
 const IconCheck = () => (
@@ -54,6 +54,7 @@ const IconFire = () => (
 
 // ─── Data ─────────────────────────────────────────────────────────────────────
 const NAV_LINKS = ["Home", "Features", "Pricing", "Blog", "Contact"];
+const API_BASE = import.meta.env.VITE_API_URL || "";
 
 const FEATURES = [
   { icon: <IconTrendUp />, color: "bg-lime-400", title: "Track Revenue", desc: "Monitor your gym's financial performance with detailed revenue analytics and real-time reporting tools." },
@@ -465,16 +466,45 @@ function Testimonials() {
 }
 
 // ─── Pricing ──────────────────────────────────────────────────────────────────
-function Pricing() {
+function Pricing({ plans = [], loading = false, error = "" }) {
+  const pricingPlans = useMemo(() => {
+    if (!Array.isArray(plans) || plans.length === 0) return PLANS;
+
+    const sorted = [...plans].sort((a, b) => (a.price ?? 0) - (b.price ?? 0));
+    const popularIndex = sorted.length >= 3 ? 1 : -1;
+
+    return sorted.slice(0, 3).map((plan, idx) => {
+      const isPopular = idx === popularIndex;
+      const period = plan.durationMonths === 1 ? "/mo" : `/${plan.durationMonths} mo`;
+
+      return {
+        name: plan.name,
+        price: typeof plan.price === "number" ? `$${plan.price}` : "$0",
+        period,
+        badge: isPopular ? "Most Popular" : null,
+        color: isPopular ? "border-lime-400" : "border-zinc-700",
+        btnClass: isPopular
+          ? "bg-lime-400 hover:bg-lime-300 text-black font-bold"
+          : "bg-zinc-800 hover:bg-zinc-700 text-white",
+        btnText: "Get Started",
+        features: plan.description
+          ? [plan.description, "Member management", "Scheduling", "Analytics"]
+          : ["Member management", "Scheduling", "Analytics"]
+      };
+    });
+  }, [plans]);
+
   return (
     <section className="bg-zinc-950 py-24 px-4">
       <div className="max-w-5xl mx-auto">
         <div className="text-center mb-14">
           <h2 className="text-4xl md:text-5xl font-black text-white mb-4">Easy For Your <span className="text-lime-400">Bank Account</span></h2>
           <p className="text-zinc-400 max-w-xl mx-auto">Our flexible pricing plans give you access to the features you need without breaking the bank.</p>
+          {loading && <p className="text-zinc-500 text-sm mt-4">Loading pricing from server…</p>}
+          {!loading && error && <p className="text-red-400 text-sm mt-4">{error}</p>}
         </div>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-          {PLANS.map((p) => (
+          {pricingPlans.map((p) => (
             <div key={p.name} className={`relative bg-zinc-900 border-2 ${p.color} rounded-2xl p-7 flex flex-col ${p.badge ? "scale-100 md:scale-105 shadow-xl shadow-lime-400/10" : ""}`}>
               {p.badge && (
                 <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 bg-lime-400 text-black text-xs font-black px-4 py-1 rounded-full">
@@ -591,6 +621,38 @@ function Footer() {
 
 // ─── Home Page ────────────────────────────────────────────────────────────────
 export default function Home() {
+  const [homePlans, setHomePlans] = useState([]);
+  const [homeLoading, setHomeLoading] = useState(false);
+  const [homeError, setHomeError] = useState("");
+
+  useEffect(() => {
+    let cancelled = false;
+
+    const load = async () => {
+      setHomeLoading(true);
+      setHomeError("");
+
+      try {
+        const res = await fetch(`${API_BASE}/api/public/home`);
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+
+        const data = await res.json();
+        if (cancelled) return;
+
+        setHomePlans(Array.isArray(data?.plans) ? data.plans : []);
+      } catch (e) {
+        if (!cancelled) setHomeError("Could not load live pricing. Showing default plans.");
+      } finally {
+        if (!cancelled) setHomeLoading(false);
+      }
+    };
+
+    load();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
   return (
     <div className="bg-black min-h-screen">
       <Navbar />
@@ -600,7 +662,7 @@ export default function Home() {
       <Trainers />
       <WorkoutCategories />
       <Testimonials />
-      <Pricing />
+      <Pricing plans={homePlans} loading={homeLoading} error={homeError} />
       <Gallery />
       <CTA />
       <Footer />

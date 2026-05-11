@@ -13,6 +13,7 @@ import dietRoutes from "./routes/diet.routes.js"
 import progressRoutes from "./routes/progress.routes.js"
 import reportRoutes from "./routes/report.routes.js"
 import superAdminRoutes from "./routes/superAdmin.routes.js"
+import publicRoutes from "./routes/public.routes.js"
 
 const app = express()
 
@@ -35,6 +36,7 @@ app.use("/api/diets", dietRoutes)
 app.use("/api/progress", progressRoutes)
 app.use("/api/reports", reportRoutes)
 app.use("/api/super-admin", superAdminRoutes)
+app.use("/api/public", publicRoutes)
 
 app.use(notFound)
 app.use(errorHandler)

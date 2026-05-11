@@ -1,615 +1,609 @@
-import {
-  ArrowRight,
-  BarChart3,
-  CalendarClock,
-  CheckCircle2,
-  CreditCard,
-  Dumbbell,
-  Menu,
-  QrCode,
-  ShieldCheck,
-  Sparkles,
-  Users,
-} from "lucide-react"
-import { Link } from "react-router-dom"
-import Button from "../../components/Button.jsx"
-import Reveal from "../../components/Reveal.jsx"
-import heroIllustration from "../../../assets/landing/hero-illustration.svg"
-import dashboardPreview from "../../../assets/landing/dashboard-preview.svg"
+import { useState } from "react";
 
-const FeatureCard = ({ icon, title, description }) => (
-  <div className="group flex flex-col gap-4 rounded-2xl border border-slate-200/80 bg-white/60 p-6 transition-all duration-300 hover:-translate-y-0.5 hover:border-slate-300 hover:bg-white/90 hover:shadow-lg hover:shadow-slate-200/60 dark:border-slate-800/80 dark:bg-slate-900/40 dark:hover:border-slate-700 dark:hover:bg-slate-900/70 dark:hover:shadow-black/20">
-    <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-sky-50 text-sky-600 ring-1 ring-sky-100 transition-transform duration-300 group-hover:scale-105 dark:bg-sky-900/20 dark:text-sky-400 dark:ring-sky-800/40">
-      {icon}
-    </div>
-    <div>
-      <h3 className="font-display text-[15px] font-semibold text-slate-900 dark:text-white">{title}</h3>
-      <p className="mt-1.5 text-sm leading-relaxed text-slate-500 dark:text-slate-400">{description}</p>
-    </div>
-  </div>
-)
+// ─── Icons (inline SVGs to avoid dependencies) ───────────────────────────────
+const IconCheck = () => (
+  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+    <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+  </svg>
+);
+const IconStar = ({ filled = true }) => (
+  <svg className="w-4 h-4" viewBox="0 0 24 24" fill={filled ? "#FACC15" : "none"} stroke="#FACC15" strokeWidth={1.5}>
+    <path strokeLinecap="round" strokeLinejoin="round" d="M11.48 3.499a.562.562 0 011.04 0l2.125 5.111a.563.563 0 00.475.345l5.518.442c.499.04.701.663.321.988l-4.204 3.602a.563.563 0 00-.182.557l1.285 5.385a.562.562 0 01-.84.61l-4.725-2.885a.563.563 0 00-.586 0L6.982 20.54a.562.562 0 01-.84-.61l1.285-5.386a.562.562 0 00-.182-.557l-4.204-3.602a.562.562 0 01.321-.988l5.518-.442a.563.563 0 00.475-.345L11.48 3.5z" />
+  </svg>
+);
+const IconMenu = () => (
+  <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+    <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h16" />
+  </svg>
+);
+const IconX = () => (
+  <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+    <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+  </svg>
+);
+const IconArrow = () => (
+  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+    <path strokeLinecap="round" strokeLinejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3" />
+  </svg>
+);
+const IconTrendUp = () => (
+  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+    <path strokeLinecap="round" strokeLinejoin="round" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+  </svg>
+);
+const IconUsers = () => (
+  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+    <path strokeLinecap="round" strokeLinejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
+  </svg>
+);
+const IconCalendar = () => (
+  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+    <path strokeLinecap="round" strokeLinejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+  </svg>
+);
+const IconDumbbell = () => (
+  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+    <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 13.5l10.5-11.25L12 10.5h8.25L9.75 21.75 12 13.5H3.75z" />
+  </svg>
+);
+const IconFire = () => (
+  <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
+    <path d="M17.66 11.2C17.43 10.9 17.15 10.64 16.89 10.38C16.22 9.78 15.46 9.35 14.82 8.72C13.33 7.26 13 4.85 13.95 3C13 3.23 12.17 3.75 11.46 4.32C8.87 6.4 7.85 10.07 9.07 13.22C9.11 13.32 9.15 13.42 9.15 13.55C9.15 13.77 9 13.97 8.8 14.05C8.57 14.15 8.33 14.09 8.14 13.93C8.08 13.88 8.04 13.83 8 13.76C6.87 12.33 6.69 10.28 7.45 8.64C5.78 10 4.87 12.3 5 14.47C5.06 14.97 5.12 15.47 5.29 15.97C5.43 16.57 5.7 17.17 6 17.7C7.08 19.43 8.95 20.67 10.96 20.92C13.1 21.19 15.39 20.8 17.03 19.32C18.86 17.66 19.5 15 18.56 12.72L18.43 12.46C18.22 12 17.66 11.2 17.66 11.2Z" />
+  </svg>
+);
 
-const RolePill = ({ role, color }) => (
-  <span className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold tracking-wide ${color}`}>
-    {role}
-  </span>
-)
+// ─── Data ─────────────────────────────────────────────────────────────────────
+const NAV_LINKS = ["Home", "Features", "Pricing", "Blog", "Contact"];
 
-export default function Home() {
-  const scrollToSection = (id) => {
-    const section = document.getElementById(id)
-    if (!section) return
+const FEATURES = [
+  { icon: <IconTrendUp />, color: "bg-lime-400", title: "Track Revenue", desc: "Monitor your gym's financial performance with detailed revenue analytics and real-time reporting tools." },
+  { icon: <IconUsers />, color: "bg-orange-400", title: "Manage Members", desc: "Track member attendance, manage memberships, and keep complete member profiles all in one place." },
+  { icon: <IconCalendar />, color: "bg-blue-400", title: "Class Scheduling", desc: "Create and manage class schedules, handle bookings, and send automated reminders to members." },
+  { icon: <IconDumbbell />, color: "bg-purple-400", title: "Trainer Management", desc: "Assign trainers to members, track performance metrics, and manage trainer schedules efficiently." },
+];
 
-    const headerOffset = 76
-    const targetTop = section.getBoundingClientRect().top + window.scrollY - headerOffset
+const GYM_CARDS = [
+  { title: "Member Status", desc: "Get complete visibility into your membership base. Monitor active, inactive, and trial memberships in real-time.", img: "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=400&q=80" },
+  { title: "Trainer Hub", desc: "Centralize all trainer operations and communications in one powerful hub for better performance.", img: "https://images.unsplash.com/photo-1571019614242-c5c5dee9f50b?w=400&q=80" },
+  { title: "Income Tracker", desc: "Track your income streams, monitor expenses and get clear financial insights to grow your gym.", img: "https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=400&q=80" },
+];
 
-    window.history.replaceState(null, "", `#${id}`)
-    window.scrollTo({ top: targetTop, behavior: "smooth" })
-  }
+const TRAINERS = [
+  { name: "King Zarqs", specialty: "Strength & Conditioning", exp: "8 yrs", clients: "120+", rating: 4.9, img: "https://images.unsplash.com/photo-1567013127542-490d757e51fc?w=300&q=80" },
+  { name: "Larry Rope", specialty: "CrossFit & HIIT", exp: "6 yrs", clients: "95+", rating: 4.8, img: "https://images.unsplash.com/photo-1583500178450-e59e4309b57b?w=300&q=80" },
+  { name: "Doez Pon", specialty: "Yoga & Flexibility", exp: "10 yrs", clients: "150+", rating: 5.0, img: "https://images.unsplash.com/photo-1594737625785-a6cbdabd333c?w=300&q=80" },
+  { name: "Max Strong", specialty: "Powerlifting", exp: "12 yrs", clients: "80+", rating: 4.7, img: "https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=300&q=80" },
+  { name: "John Matai", specialty: "Boxing & MMA", exp: "9 yrs", clients: "60+", rating: 4.9, img: "https://images.unsplash.com/photo-1552072092-7f9b8d63efcb?w=300&q=80" },
+  { name: "Jake Flex", specialty: "Bodybuilding", exp: "7 yrs", clients: "110+", rating: 4.6, img: "https://images.unsplash.com/photo-1618886487661-4c56e8bfca40?w=300&q=80" },
+];
 
-  const handleNavClick = (event, id) => {
-    event.preventDefault()
-    scrollToSection(id)
-  }
+const CATEGORIES = [
+  { label: "Boxing", emoji: "🥊", color: "bg-red-500/20 text-red-400" },
+  { label: "Yoga", emoji: "🧘", color: "bg-purple-500/20 text-purple-400" },
+  { label: "Cardio", emoji: "🏃", color: "bg-blue-500/20 text-blue-400" },
+  { label: "Strength Training", emoji: "🏋️", color: "bg-lime-500/20 text-lime-400" },
+  { label: "CrossFit", emoji: "⚡", color: "bg-yellow-500/20 text-yellow-400" },
+  { label: "Cycling", emoji: "🚴", color: "bg-cyan-500/20 text-cyan-400" },
+  { label: "Martial Arts", emoji: "🥋", color: "bg-orange-500/20 text-orange-400" },
+  { label: "Zumba", emoji: "💃", color: "bg-pink-500/20 text-pink-400" },
+  { label: "Swimming", emoji: "🏊", color: "bg-teal-500/20 text-teal-400" },
+  { label: "Running", emoji: "👟", color: "bg-green-500/20 text-green-400" },
+];
 
-  const features = [
-    {
-      icon: <ShieldCheck size={18} />,
-      title: "Role-based access control",
-      description: "Super admin, admin, trainer, and member experiences — each scoped to what they actually need.",
-    },
-    {
-      icon: <Users size={18} />,
-      title: "Members & trainers together",
-      description: "Profiles, memberships, attendance, and progress in one place. No more spreadsheets.",
-    },
-    {
-      icon: <CreditCard size={18} />,
-      title: "Plans, payments & invoices",
-      description: "Track renewals, collections, and revenue with a clean, predictable payment workflow.",
-    },
-    {
-      icon: <QrCode size={18} />,
-      title: "Attendance that scales",
-      description: "Simple check-in flows today, with a solid foundation for QR and kiosk automation.",
-    },
-    {
-      icon: <Dumbbell size={18} />,
-      title: "Workout & diet programs",
-      description: "Trainers can build and deliver training and nutrition plans directly to members.",
-    },
-    {
-      icon: <BarChart3 size={18} />,
-      title: "Reports & insights",
-      description: "Understand retention, attendance trends, and revenue at a glance with clean dashboards.",
-    },
-  ]
+const TESTIMONIALS = [
+  { name: "Davis Garcia", role: "Gym Owner", text: "I've seen massive improvements in my gym's performance thanks to this tool. Couldn't ask for more!", rating: 5, img: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=80&q=80" },
+  { name: "Maria Santos", role: "Fitness Trainer", text: "The trainers are dedicated and professional. The member management module is fantastic!", rating: 4, img: "https://images.unsplash.com/photo-1494790108755-2616b612b47c?w=80&q=80" },
+  { name: "Brad Lee", role: "Member", text: "Excellent trainers, fantastic customer service! Couldn't ask for more from a fitness platform.", rating: 5, img: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=80&q=80" },
+  { name: "Salma Hassan", role: "Gym Manager", text: "Great results from dedicated trainers! Revenue tracking alone was worth every penny spent.", rating: 5, img: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=80&q=80" },
+  { name: "James Kim", role: "PT Coach", text: "The scheduling feature has completely transformed how I manage my clients day-to-day.", rating: 4, img: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=80&q=80" },
+  { name: "Rachel Moon", role: "Gym Owner", text: "We've transformed our member retention significantly. The analytics are incredibly detailed.", rating: 5, img: "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=80&q=80" },
+  { name: "Ditto Paul", role: "Trainer", text: "An outstanding trainer who truly understands client needs. The app makes tracking effortless.", rating: 5, img: "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=80&q=80" },
+  { name: "Jaqueline M.", role: "Member", text: "The morning makes class scheduling ridiculously easy. I never miss a session anymore.", rating: 4, img: "https://images.unsplash.com/photo-1487412720507-e7ab37603c6f?w=80&q=80" },
+  { name: "Tom Richards", role: "Gym Owner", text: "The income tracker has given me a clear view of exactly where every dollar in my gym is going.", rating: 5, img: "https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=80&q=80" },
+];
 
+const PLANS = [
+  {
+    name: "Free Plan", price: "$0", period: "", badge: null, color: "border-zinc-700",
+    btnClass: "bg-zinc-800 hover:bg-zinc-700 text-white", btnText: "Get Started",
+    features: ["Up to 50 members", "Basic analytics", "1 trainer account", "Email support", "Class scheduling"],
+  },
+  {
+    name: "Pro Plan", price: "$49", period: "/mo", badge: "Most Popular", color: "border-lime-400",
+    btnClass: "bg-lime-400 hover:bg-lime-300 text-black font-bold", btnText: "Get Started",
+    features: ["Unlimited members", "Advanced analytics", "10 trainer accounts", "Priority support", "Custom branding", "Revenue tracking", "Mobile app access"],
+  },
+  {
+    name: "Enterprise Plan", price: "Custom", period: "", badge: null, color: "border-zinc-700",
+    btnClass: "bg-zinc-800 hover:bg-zinc-700 text-white", btnText: "Let's Talk",
+    features: ["Unlimited everything", "Dedicated account manager", "Custom integrations", "White-label solution", "API access", "SLA guarantee", "On-site training"],
+  },
+];
+
+const GALLERY_IMGS = [
+  "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=400&q=80",
+  "https://images.unsplash.com/photo-1571019614242-c5c5dee9f50b?w=400&q=80",
+  "https://images.unsplash.com/photo-1583454110551-21f2fa2afe61?w=400&q=80",
+  "https://images.unsplash.com/photo-1581009146145-b5ef050c2e1e?w=400&q=80",
+  "https://images.unsplash.com/photo-1549060279-7e168fcee0c2?w=400&q=80",
+  "https://images.unsplash.com/photo-1517836357463-d25dfeac3438?w=400&q=80",
+  "https://images.unsplash.com/photo-1526506118085-60ce8714f8c5?w=400&q=80",
+  "https://images.unsplash.com/photo-1605296867304-46d5465a13f1?w=400&q=80",
+];
+
+const BRANDS = ["LA FITNESS", "FITNESS", "ANYTIME", "GOLD'S", "24 HOUR", "PLANET FITNESS"];
+
+const FOOTER_COLS = [
+  { title: "Company", links: ["About Us", "Careers", "Press", "Blog", "Contact"] },
+  { title: "All Features", links: ["Revenue Tracking", "Member Management", "Class Scheduling", "Trainer Tools", "Analytics"] },
+  { title: "Resources", links: ["Documentation", "API Reference", "Help Center", "Community", "Status"] },
+  { title: "Legal", links: ["Privacy Policy", "Terms of Service", "Cookie Policy", "GDPR"] },
+  { title: "Login", links: ["Sign In", "Sign Up", "Dashboard", "Forgot Password"] },
+];
+
+// ─── Star Rating Component ────────────────────────────────────────────────────
+function StarRating({ rating }) {
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-[#0d0d10]">
-      {/* ── Nav ── */}
-      <header className="sticky top-0 z-30 border-b border-slate-200/60 bg-white/80 backdrop-blur-xl dark:border-white/5 dark:bg-[#0d0d10]/80">
-        <div className="mx-auto max-w-6xl px-5 sm:px-8">
-          <div className="flex h-[60px] items-center justify-between gap-6">
+    <div className="flex gap-0.5">
+      {[1, 2, 3, 4, 5].map((s) => (
+        <IconStar key={s} filled={s <= Math.round(rating)} />
+      ))}
+    </div>
+  );
+}
 
-            {/* Logo */}
-            <Link to="/" className="flex items-center gap-2.5 shrink-0">
-              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-sky-600 text-white">
-                <Dumbbell size={15} />
-              </div>
-              <span className="font-display text-[15px] font-bold tracking-tight text-slate-900 dark:text-white">
-                Atlas Gym OS
-              </span>
-            </Link>
-
-            {/* Desktop Nav */}
-            <nav className="hidden items-center gap-1 md:flex">
-              {["Features", "Benefits", "Preview", "Why us", "About"].map((item) => (
-                <a
-                  key={item}
-                  href={`#${item.toLowerCase().replace(" ", "-")}`}
-                  onClick={(event) => handleNavClick(event, item.toLowerCase().replace(" ", "-"))}
-                  className="rounded-lg px-3 py-1.5 text-sm text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-white/5 dark:hover:text-white"
-                >
-                  {item}
-                </a>
-              ))}
-            </nav>
-
-            {/* CTA row */}
-            <div className="flex items-center gap-2">
-              <Link to="/login" className="hidden md:block">
-                <Button variant="secondary">Sign in</Button>
-              </Link>
-              <Link to="/register">
-                <Button className="inline-flex items-center gap-1.5 text-sm">
-                  Get started <ArrowRight size={14} />
-                </Button>
-              </Link>
-
-              {/* Mobile hamburger */}
-              <details className="relative md:hidden">
-                <summary className="list-none cursor-pointer rounded-lg border border-slate-200 bg-white p-2 dark:border-slate-800 dark:bg-slate-900">
-                  <Menu size={16} />
-                </summary>
-                <div className="absolute right-0 mt-2 w-56 rounded-2xl border border-slate-200 bg-white p-3 shadow-xl dark:border-slate-800 dark:bg-[#111114]">
-                  <div className="flex flex-col gap-0.5 text-sm">
-                    {["Features", "Benefits", "Preview", "Why us", "About", "Demo"].map((item) => (
-                      <a
-                        key={item}
-                        href={`#${item.toLowerCase().replace(" ", "-")}`}
-                        onClick={(event) => handleNavClick(event, item.toLowerCase().replace(" ", "-"))}
-                        className="rounded-lg px-3 py-2 text-slate-700 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-white/5"
-                      >
-                        {item}
-                      </a>
-                    ))}
-                  </div>
-                  <div className="mt-3 flex flex-col gap-2 border-t border-slate-100 pt-3 dark:border-slate-800">
-                    <Link to="/login">
-                      <Button variant="secondary" className="w-full">Sign in</Button>
-                    </Link>
-                    <Link to="/register">
-                      <Button className="w-full">Get started</Button>
-                    </Link>
-                  </div>
-                </div>
-              </details>
-            </div>
-
+// ─── Navbar ───────────────────────────────────────────────────────────────────
+function Navbar() {
+  const [open, setOpen] = useState(false);
+  return (
+    <header className="fixed top-0 left-0 right-0 z-50 bg-black/90 backdrop-blur-md border-b border-zinc-800">
+      {/* announcement bar */}
+      <div className="bg-lime-400 text-black text-xs text-center py-1.5 font-semibold tracking-wide">
+        🎉 New Feature: Just Launched! Explore the Latest in Gym Management Tools — <span className="underline cursor-pointer">Discover Now →</span>
+      </div>
+      <nav className="max-w-7xl mx-auto px-4 flex items-center justify-between h-14">
+        <div className="flex items-center gap-2">
+          <div className="w-7 h-7 bg-lime-400 rounded flex items-center justify-center">
+            <span className="text-black font-black text-xs">G</span>
           </div>
+          <span className="text-white font-bold text-lg tracking-tight">go.Jim</span>
         </div>
-      </header>
+        <ul className="hidden md:flex items-center gap-7">
+          {NAV_LINKS.map((l) => (
+            <li key={l}>
+              <a href="#" className="text-zinc-400 hover:text-white text-sm font-medium transition-colors">{l}</a>
+            </li>
+          ))}
+        </ul>
+        <div className="hidden md:flex items-center gap-3">
+          <a href="#" className="text-zinc-300 hover:text-white text-sm font-medium transition-colors">Login</a>
+          <a href="#" className="bg-lime-400 hover:bg-lime-300 text-black text-sm font-bold px-4 py-2 rounded-lg transition-colors">Get Started</a>
+        </div>
+        <button className="md:hidden text-white" onClick={() => setOpen(!open)}>
+          {open ? <IconX /> : <IconMenu />}
+        </button>
+      </nav>
+      {open && (
+        <div className="md:hidden bg-black border-t border-zinc-800 px-4 py-4 flex flex-col gap-4">
+          {NAV_LINKS.map((l) => (
+            <a key={l} href="#" className="text-zinc-300 hover:text-white text-sm">{l}</a>
+          ))}
+          <a href="#" className="bg-lime-400 text-black text-sm font-bold px-4 py-2 rounded-lg text-center">Get Started</a>
+        </div>
+      )}
+    </header>
+  );
+}
 
-      <main>
-        {/* ── Hero ── */}
-        <section className="relative overflow-hidden pb-16 pt-14 sm:pb-24 sm:pt-20">
-          {/* Subtle bg blobs */}
-          <div aria-hidden className="pointer-events-none absolute inset-0 overflow-hidden">
-            <div className="absolute -left-32 top-0 h-[480px] w-[480px] rounded-full bg-sky-100/60 blur-[100px] dark:bg-sky-900/20" />
-            <div className="absolute -right-24 bottom-0 h-[400px] w-[400px] rounded-full bg-indigo-100/50 blur-[90px] dark:bg-indigo-900/20" />
-          </div>
+// ─── Hero ─────────────────────────────────────────────────────────────────────
+function Hero() {
+  return (
+    <section className="relative bg-black min-h-screen flex flex-col items-center justify-center pt-28 pb-20 overflow-hidden">
+      {/* bg glow */}
+      <div className="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[400px] bg-lime-400/5 rounded-full blur-3xl pointer-events-none" />
+      <div className="relative z-10 text-center max-w-3xl mx-auto px-4">
+        <div className="inline-flex items-center gap-2 bg-zinc-900 border border-zinc-700 rounded-full px-4 py-1.5 mb-6">
+          <span className="w-2 h-2 rounded-full bg-lime-400 animate-pulse" />
+          <span className="text-zinc-400 text-xs font-medium">The #1 Gym Management Platform</span>
+        </div>
+        <h1 className="text-5xl md:text-7xl font-black text-white leading-tight tracking-tight mb-6">
+          Simplify Your<br />
+          <span className="text-lime-400">Fitness Business</span>
+        </h1>
+        <p className="text-zinc-400 text-lg md:text-xl max-w-xl mx-auto mb-8 leading-relaxed">
+          Boost efficiency and increase gym profitability with our all-in-one gym management dashboard.
+        </p>
+        <div className="flex flex-col sm:flex-row gap-3 justify-center">
+          <a href="#" className="bg-lime-400 hover:bg-lime-300 text-black font-bold px-8 py-3.5 rounded-xl text-base transition-all hover:scale-105 shadow-lg shadow-lime-400/20">
+            Discover a Demo
+          </a>
+          <a href="#" className="bg-zinc-800 hover:bg-zinc-700 text-white font-semibold px-8 py-3.5 rounded-xl text-base transition-colors border border-zinc-700">
+            Learn More
+          </a>
+        </div>
+      </div>
 
-          <div className="relative mx-auto max-w-6xl px-5 sm:px-8">
-            {/* Badge */}
-            <Reveal y={8} scaleFrom={0.98} className="mb-6 inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-3.5 py-1.5 text-xs font-medium text-slate-600 shadow-sm dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300">
-              <span className="h-1.5 w-1.5 rounded-full bg-sky-500 dark:bg-sky-400" />
-              Role-aware gym management
-            </Reveal>
-
-            {/* Two-column hero */}
-            <div className="grid gap-12 lg:grid-cols-[1fr_420px] lg:items-start xl:grid-cols-[1fr_460px]">
-              {/* Left: copy */}
-              <Reveal y={16} x={-10} scaleFrom={0.985} className="max-w-2xl">
-                <h1 className="font-display text-[2.4rem] font-bold leading-[1.15] tracking-tight text-slate-900 dark:text-white sm:text-5xl lg:text-[3.2rem]">
-                  Run your gym with{" "}
-                  <span className="text-sky-600 dark:text-sky-400">clarity</span>{" "}
-                  and control.
-                </h1>
-                <p className="mt-5 text-lg leading-relaxed text-slate-500 dark:text-slate-400">
-                  Atlas Gym OS handles memberships, attendance, payments, and programs — with focused dashboards for
-                  every role on your team.
-                </p>
-
-                <div className="mt-8 flex flex-wrap items-center gap-3">
-                  <Link to="/register">
-                    <Button className="inline-flex items-center gap-2 px-5 py-2.5 text-sm font-semibold">
-                      Create your workspace <ArrowRight size={15} />
-                    </Button>
-                  </Link>
-                  <Link to="/login">
-                    <Button variant="secondary" className="px-5 py-2.5 text-sm">
-                      I already have an account
-                    </Button>
-                  </Link>
-                </div>
-
-                <a href="#demo" className="mt-4 inline-block text-sm font-medium text-sky-600 hover:underline dark:text-sky-400">
-                  View demo credentials →
-                </a>
-
-                {/* Role chips */}
-                <div className="mt-10 flex flex-wrap gap-2">
-                  <RolePill role="Super admin" color="bg-violet-100 text-violet-700 dark:bg-violet-900/30 dark:text-violet-300" />
-                  <RolePill role="Gym admin" color="bg-sky-100 text-sky-700 dark:bg-sky-900/30 dark:text-sky-300" />
-                  <RolePill role="Trainer" color="bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300" />
-                  <RolePill role="Member" color="bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300" />
-                </div>
-              </Reveal>
-
-              {/* Right: card */}
-              <Reveal delayMs={120} y={18} x={12} scaleFrom={0.98} className="rounded-3xl border border-slate-200/80 bg-white/70 p-6 shadow-xl shadow-slate-200/50 backdrop-blur-sm dark:border-slate-700/70 dark:bg-slate-900/85 dark:shadow-black/30 sm:p-8">
-                <div className="flex items-center justify-between">
-                  <p className="text-xs font-semibold uppercase tracking-widest text-slate-600 dark:text-slate-200">Quick start</p>
-                  <div className="flex items-center gap-1.5 rounded-full bg-sky-50 px-3 py-1 text-xs font-medium text-sky-600 dark:bg-sky-900/30 dark:text-sky-400">
-                    <CalendarClock size={12} />
-                    Up in minutes
-                  </div>
-                </div>
-
-                <h2 className="mt-4 font-display text-xl font-bold text-slate-900 dark:text-white">
-                  Everything you need — nothing you don't.
-                </h2>
-                <p className="mt-2 text-sm leading-relaxed text-slate-500 dark:text-slate-300">
-                  Keep operations tight, give trainers what they need, and keep members engaged.
-                </p>
-
-                <ul className="mt-6 space-y-3">
-                  {[
-                    "Create membership plans and manage renewals",
-                    "Capture attendance and track member consistency",
-                    "Assign workout and diet plans through trainers",
-                    "View payments and performance at a glance",
-                  ].map((item) => (
-                    <li key={item} className="flex items-center gap-3 text-sm text-slate-700 dark:text-slate-200">
-                      <CheckCircle2 size={15} className="shrink-0 text-sky-500 dark:text-sky-400" />
-                      {item}
-                    </li>
-                  ))}
-                </ul>
-
-                <div className="mt-8 flex gap-2.5">
-                  <Link to="/login" className="flex-1">
-                    <Button className="w-full justify-center text-sm">Sign in</Button>
-                  </Link>
-                  <Link to="/register" className="flex-1">
-                    <Button variant="secondary" className="w-full justify-center text-sm">Create account</Button>
-                  </Link>
-                </div>
-
-                <p className="mt-4 text-xs text-slate-600 dark:text-slate-300">
-                  Super admin accounts manage multiple gyms and onboard new locations.
-                </p>
-              </Reveal>
+      {/* Dashboard Mockup */}
+      <div className="relative z-10 mt-16 max-w-5xl mx-auto px-4 w-full">
+        <div className="bg-zinc-900 border border-zinc-700 rounded-2xl overflow-hidden shadow-2xl">
+          {/* top bar */}
+          <div className="flex items-center gap-2 px-4 py-3 bg-zinc-800 border-b border-zinc-700">
+            <div className="w-3 h-3 rounded-full bg-red-500" />
+            <div className="w-3 h-3 rounded-full bg-yellow-500" />
+            <div className="w-3 h-3 rounded-full bg-green-500" />
+            <div className="flex-1 mx-4 bg-zinc-900 rounded-md h-6 flex items-center px-3">
+              <span className="text-zinc-500 text-xs">app.go-jim.com/dashboard</span>
             </div>
           </div>
-        </section>
-
-        {/* ── Features ── */}
-        <section id="features" className="scroll-mt-20 pb-20">
-          <div className="mx-auto max-w-6xl px-5 sm:px-8">
-            <Reveal y={14} scaleFrom={0.985}>
-              <div className="mb-10 max-w-xl">
-                <p className="text-xs font-semibold uppercase tracking-widest text-sky-600 dark:text-sky-400">Features</p>
-                <h2 className="mt-2 font-display text-2xl font-bold text-slate-900 dark:text-white sm:text-3xl">
-                  Built for operators and teams.
-                </h2>
-                <p className="mt-3 text-slate-500 dark:text-slate-400">
-                  A focused set of workflows covering the daily reality of running a gym — with clean, modern UI.
-                </p>
+          <div className="grid grid-cols-12 min-h-64">
+            {/* sidebar */}
+            <div className="col-span-2 bg-zinc-950 border-r border-zinc-800 p-3 hidden md:flex flex-col gap-2">
+              <div className="flex items-center gap-1.5 mb-3">
+                <div className="w-5 h-5 bg-lime-400 rounded" />
+                <span className="text-white text-xs font-bold">go.Jim</span>
               </div>
-            </Reveal>
-
-            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-              {features.map((feature, i) => (
-                <Reveal key={feature.title} delayMs={i * 55}>
-                  <FeatureCard {...feature} />
-                </Reveal>
+              {["Dashboard","Members","Trainers","Classes","Revenue","Settings"].map(item => (
+                <div key={item} className={`text-xs px-2 py-1.5 rounded cursor-pointer ${item === "Dashboard" ? "bg-lime-400/20 text-lime-400" : "text-zinc-500 hover:text-zinc-300"}`}>{item}</div>
               ))}
             </div>
-          </div>
-        </section>
-
-        {/* ── Benefits ── */}
-        <section id="benefits" className="scroll-mt-20 pb-20">
-          <div className="mx-auto max-w-6xl px-5 sm:px-8">
-            <div className="grid gap-6 lg:grid-cols-5 lg:items-start">
-
-              {/* Left summary — wider */}
-              <Reveal className="lg:col-span-3 lg:sticky lg:top-24 self-start" y={12} scaleFrom={0.99}>
-                <div className="rounded-3xl border border-slate-200/80 bg-white/70 p-7 dark:border-slate-700/70 dark:bg-slate-900/85 sm:p-9">
-                  <p className="text-xs font-semibold uppercase tracking-widest text-sky-600 dark:text-sky-400">Benefits</p>
-                  <h2 className="mt-3 font-display text-2xl font-bold text-slate-900 dark:text-white sm:text-3xl">
-                    Less admin work.<br />More member results.
-                  </h2>
-                  <p className="mt-3 text-slate-500 dark:text-slate-300">
-                    Replace scattered tools with one system that supports every role — and scales from one gym to many.
-                  </p>
-                  <ul className="mt-7 space-y-4">
-                    {[
-                      "Reduce manual follow-ups with clear renewals and payment tracking.",
-                      "Improve retention with consistent member engagement and progress visibility.",
-                      "Give trainers a structured workflow for workouts and nutrition plans.",
-                      "Stay audit-ready with detailed attendance and reporting history.",
-                    ].map((item) => (
-                      <li key={item} className="flex items-start gap-3 text-sm text-slate-600 dark:text-slate-200">
-                        <span className="mt-[7px] h-1.5 w-1.5 shrink-0 rounded-full bg-sky-500" />
-                        {item}
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              </Reveal>
-
-              {/* Right mini cards — stacked */}
-              <div className="flex flex-col gap-4 lg:col-span-2">
+            {/* main content */}
+            <div className="col-span-12 md:col-span-10 p-4 grid grid-cols-3 gap-3">
+              {/* stats */}
+              <div className="col-span-3 grid grid-cols-4 gap-2">
                 {[
-                  {
-                    title: "Gym owners & admins",
-                    items: [
-                      "Centralize memberships, plans, attendance, and payments",
-                      "Revenue trends and collections at a glance",
-                      "Manage trainers and members with role permissions",
-                    ],
-                  },
-                  {
-                    title: "Trainers",
-                    items: [
-                      "Assign workouts and diet plans with consistency",
-                      "Track member participation and progress",
-                      "Spend less time on admin, more time coaching",
-                    ],
-                  },
-                  {
-                    title: "Members",
-                    items: [
-                      "View assigned workouts and nutrition plans anytime",
-                      "Track attendance and progress over time",
-                      "Stay accountable with a clear routine",
-                    ],
-                  },
-                ].map((card, i) => (
-                  <Reveal key={card.title} delayMs={i * 90} y={16} x={10} scaleFrom={0.985}>
-                    <div className="rounded-2xl border border-slate-200/80 bg-white/60 p-5 dark:border-slate-700/70 dark:bg-slate-900/85">
-                      <p className="text-xs font-semibold uppercase tracking-widest text-slate-500 dark:text-slate-200">{card.title}</p>
-                      <ul className="mt-3 space-y-2">
-                        {card.items.map((item) => (
-                          <li key={item} className="flex items-start gap-2.5 text-sm text-slate-600 dark:text-slate-200">
-                            <span className="mt-[7px] h-1 w-1 shrink-0 rounded-full bg-slate-300 dark:bg-slate-400" />
-                            {item}
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-                  </Reveal>
+                  { label: "Total Members", val: "2,847", change: "+12%", color: "text-lime-400" },
+                  { label: "Monthly Revenue", val: "$48,290", change: "+8.3%", color: "text-lime-400" },
+                  { label: "Active Classes", val: "34", change: "+5", color: "text-lime-400" },
+                  { label: "Trainers", val: "18", change: "+2", color: "text-lime-400" },
+                ].map(s => (
+                  <div key={s.label} className="bg-zinc-800 rounded-xl p-3">
+                    <p className="text-zinc-500 text-xs mb-1">{s.label}</p>
+                    <p className="text-white font-bold text-sm">{s.val}</p>
+                    <p className={`text-xs font-semibold ${s.color}`}>{s.change}</p>
+                  </div>
                 ))}
               </div>
-
-            </div>
-          </div>
-        </section>
-
-        {/* ── Preview ── */}
-        <section id="preview" className="scroll-mt-20 pb-20">
-          <div className="mx-auto max-w-6xl px-5 sm:px-8">
-            <div className="grid gap-8 lg:grid-cols-[380px_1fr] lg:items-center xl:grid-cols-[420px_1fr]">
-
-              <Reveal>
-                <p className="text-xs font-semibold uppercase tracking-widest text-sky-600 dark:text-sky-400">Product preview</p>
-                <h2 className="mt-3 font-display text-2xl font-bold text-slate-900 dark:text-white sm:text-3xl">
-                  A dashboard that stays calm — even on busy days.
-                </h2>
-                <p className="mt-3 text-slate-500 dark:text-slate-400">
-                  Readable, role-aware, and fast. The UI stays consistent whether you're an admin, trainer, or member.
-                </p>
-                <ul className="mt-6 space-y-3">
-                  {[
-                    "Quick access to attendance, payments, plans, and reports",
-                    "Clear separation of roles and permissions",
-                    "Responsive layout for desktop and mobile",
-                  ].map((item) => (
-                    <li key={item} className="flex items-center gap-3 text-sm text-slate-700 dark:text-slate-300">
-                      <CheckCircle2 size={15} className="shrink-0 text-sky-500" />
-                      {item}
-                    </li>
+              {/* chart area */}
+              <div className="col-span-2 bg-zinc-800 rounded-xl p-3">
+                <p className="text-zinc-400 text-xs mb-2 font-semibold">Revenue Analytics</p>
+                <div className="flex items-end gap-1.5 h-20">
+                  {[40,65,45,80,60,90,70,85,55,75,95,100].map((h,i) => (
+                    <div key={i} className="flex-1 rounded-sm" style={{height:`${h}%`, background: i === 11 ? "#a3e635" : i > 7 ? "#3f6212" : "#27272a"}} />
                   ))}
-                </ul>
-                <div className="mt-8 flex flex-wrap gap-3">
-                  <Link to="/register">
-                    <Button className="inline-flex items-center gap-2 text-sm">Get started <ArrowRight size={14} /></Button>
-                  </Link>
-                  <Link to="/login">
-                    <Button variant="secondary" className="text-sm">Sign in</Button>
-                  </Link>
-                </div>
-              </Reveal>
-
-              <Reveal delayMs={100} className="relative">
-                <div className="relative overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xl shadow-slate-300/40 dark:border-white/8 dark:bg-slate-900 dark:shadow-black/40">
-                  <img
-                    src={dashboardPreview}
-                    alt="Atlas Gym OS dashboard"
-                    className="w-full object-cover"
-                    loading="lazy"
-                  />
-                  {/* Floating badge */}
-                  <div className="absolute bottom-4 left-4 flex items-center gap-2 rounded-full border border-slate-200 bg-white/90 px-3.5 py-1.5 text-xs font-semibold text-slate-700 shadow backdrop-blur-sm dark:border-white/10 dark:bg-slate-900/90 dark:text-slate-200">
-                    <Sparkles size={12} className="text-sky-500" />
-                    Clean, modern UI
-                  </div>
-                </div>
-              </Reveal>
-
-            </div>
-          </div>
-        </section>
-
-        {/* ── Why us ── */}
-        <section id="why-us" className="scroll-mt-20 pb-20">
-          <div className="mx-auto max-w-6xl px-5 sm:px-8">
-            <Reveal y={18} scaleFrom={0.985}>
-              <div className="rounded-3xl border border-slate-200/80 bg-white/70 p-7 dark:border-slate-700/70 dark:bg-slate-900/85 sm:p-10">
-                <div className="grid gap-10 lg:grid-cols-[280px_1fr] lg:items-start xl:grid-cols-[320px_1fr]">
-
-                  <div>
-                    <p className="text-xs font-semibold uppercase tracking-widest text-sky-600 dark:text-sky-400">Why choose us</p>
-                    <h2 className="mt-3 font-display text-2xl font-bold text-slate-900 dark:text-white">
-                      Clean workflows that scale.
-                    </h2>
-                    <p className="mt-3 text-sm text-slate-500 dark:text-slate-300">
-                      Built for multi-role teams with a product-first UI. No bloated modules, no complex setup.
-                    </p>
-                  </div>
-
-                  <div className="grid gap-4 sm:grid-cols-2">
-                    {[
-                      {
-                        title: "Role-first product design",
-                        description: "Each role sees what matters — admins run ops, trainers coach, members follow plans.",
-                      },
-                      {
-                        title: "Fast onboarding",
-                        description: "Start with membership plans, bring in your members, and begin tracking immediately.",
-                      },
-                      {
-                        title: "Mobile-friendly throughout",
-                        description: "Responsive layouts that work well on desktops, tablets, and phones.",
-                      },
-                      {
-                        title: "Expandable foundation",
-                        description: "Ready to grow into QR check-in, payment gateways, and automated notifications.",
-                      },
-                    ].map((item, i) => (
-                      <Reveal key={item.title} delayMs={i * 65}>
-                        <div className="rounded-2xl border border-slate-200/80 bg-slate-50/80 p-5 transition-all duration-200 hover:bg-white hover:shadow-md dark:border-slate-700/70 dark:bg-slate-800/90 dark:hover:bg-slate-800">
-                          <h3 className="font-display text-[15px] font-semibold text-slate-900 dark:text-white">{item.title}</h3>
-                          <p className="mt-2 text-sm text-slate-500 dark:text-slate-300">{item.description}</p>
-                        </div>
-                      </Reveal>
-                    ))}
-                  </div>
-
                 </div>
               </div>
-            </Reveal>
-          </div>
-        </section>
-
-        {/* ── Demo + About ── */}
-        <section id="demo" className="scroll-mt-20 pb-20">
-          <div className="mx-auto max-w-6xl px-5 sm:px-8">
-            <div className="grid gap-6 lg:grid-cols-2">
-
-              {/* Demo credentials */}
-              <Reveal y={16} x={-8} scaleFrom={0.985}>
-                <div className="rounded-3xl border border-slate-200/80 bg-white/70 p-7 dark:border-slate-700/70 dark:bg-slate-900/85 sm:p-8">
-                  <h2 className="font-display text-xl font-bold text-slate-900 dark:text-white">Demo credentials</h2>
-                  <p className="mt-2 text-sm text-slate-500 dark:text-slate-300">
-                    Use these accounts to explore the role-based dashboards.
-                  </p>
-
-                  <div className="mt-6 space-y-2.5">
-                    {[
-                      { label: "Super admin", cred: "owner@gym.local / Owner@123", color: "bg-violet-50 dark:bg-violet-900/35" },
-                      { label: "Admin",       cred: "admin@gym.local / Admin@123",   color: "bg-sky-50 dark:bg-sky-900/35" },
-                      { label: "Trainer",     cred: "trainer@gym.local / Trainer@123", color: "bg-emerald-50 dark:bg-emerald-900/35" },
-                      { label: "Member",      cred: "member@gym.local / Member@123",  color: "bg-amber-50 dark:bg-amber-900/35" },
-                    ].map((row) => (
-                      <div
-                        key={row.label}
-                        className={`flex items-center justify-between gap-4 rounded-xl px-4 py-3 ${row.color}`}
-                      >
-                        <span className="text-xs font-semibold uppercase tracking-widest text-slate-500 dark:text-slate-200 shrink-0">
-                          {row.label}
-                        </span>
-                        <span className="font-mono text-xs text-slate-700 dark:text-slate-100">{row.cred}</span>
-                      </div>
-                    ))}
+              {/* member cards */}
+              <div className="col-span-1 bg-zinc-800 rounded-xl p-3 flex flex-col gap-2">
+                <p className="text-zinc-400 text-xs font-semibold">Personal Trainers</p>
+                {[
+                  { name: "King Z.", img: "https://images.unsplash.com/photo-1567013127542-490d757e51fc?w=40&q=80" },
+                  { name: "Larry R.", img: "https://images.unsplash.com/photo-1583500178450-e59e4309b57b?w=40&q=80" },
+                ].map(t => (
+                  <div key={t.name} className="flex items-center gap-2">
+                    <img src={t.img} alt={t.name} className="w-7 h-7 rounded-full object-cover" />
+                    <span className="text-zinc-300 text-xs">{t.name}</span>
+                    <span className="ml-auto text-lime-400 text-xs">Active</span>
                   </div>
-
-                  <div className="mt-6">
-                    <Link to="/login">
-                      <Button className="inline-flex items-center gap-2 text-sm">
-                        Sign in to demo <ArrowRight size={14} />
-                      </Button>
-                    </Link>
-                  </div>
-                </div>
-              </Reveal>
-
-              {/* About */}
-              <Reveal delayMs={100} y={16} x={8} scaleFrom={0.985}>
-                <div id="about" className="scroll-mt-20 rounded-3xl border border-slate-200/80 bg-white/70 p-7 dark:border-slate-700/70 dark:bg-slate-900/85 sm:p-8">
-                  <p className="text-xs font-semibold uppercase tracking-widest text-sky-600 dark:text-sky-400">About</p>
-                  <h2 className="mt-3 font-display text-xl font-bold text-slate-900 dark:text-white">
-                    A gym OS built for the real world.
-                  </h2>
-                  <p className="mt-3 text-sm leading-relaxed text-slate-500 dark:text-slate-300">
-                    From renewals to trainer programming, Atlas Gym OS focuses on the everyday workflows that keep a gym
-                    running — simple on day one, ready for deeper automation as you grow.
-                  </p>
-
-                  <div className="mt-6 grid grid-cols-2 gap-3">
-                    {[
-                      { label: "Owners",  value: "Operational visibility" },
-                      { label: "Teams",   value: "Structured routines" },
-                      { label: "Members", value: "Better accountability" },
-                      { label: "Brands",  value: "Multi-gym scale" },
-                    ].map((item) => (
-                      <div key={item.label} className="rounded-xl border border-slate-200/80 bg-slate-50 p-4 dark:border-slate-700/70 dark:bg-slate-800/90">
-                        <p className="text-[11px] font-semibold uppercase tracking-widest text-slate-600 dark:text-slate-300">{item.label}</p>
-                        <p className="mt-1.5 font-display text-base font-bold text-slate-900 dark:text-white">{item.value}</p>
-                      </div>
-                    ))}
-                  </div>
-
-                  <div className="mt-7 flex flex-wrap gap-2.5">
-                    <Link to="/register">
-                      <Button className="text-sm">Get started</Button>
-                    </Link>
-                    <Link to="/login">
-                      <Button variant="secondary" className="text-sm">Sign in</Button>
-                    </Link>
-                  </div>
-                  <p className="mt-4 text-xs text-slate-600 dark:text-slate-300">
-                    Need onboarding help? Ask for a guided setup tailored to your gym.
-                  </p>
-                </div>
-              </Reveal>
-
-            </div>
-          </div>
-        </section>
-
-        {/* ── CTA Banner ── */}
-        <section className="pb-20">
-          <div className="mx-auto max-w-6xl px-5 sm:px-8">
-            <Reveal>
-              <div className="overflow-hidden rounded-3xl bg-sky-600 px-8 py-12 dark:bg-sky-700 sm:px-12">
-                <div className="grid gap-6 lg:grid-cols-[1fr_auto] lg:items-center">
-                  <div>
-                    <h2 className="font-display text-2xl font-bold text-white sm:text-3xl">
-                      Ready to simplify your gym operations?
-                    </h2>
-                    <p className="mt-2 text-sky-100 sm:text-lg">
-                      Start with the essentials. Add QR check-in, payment gateways, and automations as you grow.
-                    </p>
-                  </div>
-                  <div className="flex flex-wrap items-center gap-3">
-                    <Link to="/register">
-                      <Button className="bg-white !text-sky-700 hover:bg-sky-50 border-0 text-sm font-semibold">
-                        Create account
-                      </Button>
-                    </Link>
-                    <Link to="/login">
-                      <Button className="border border-white/40 bg-transparent text-white hover:bg-white/10 text-sm">
-                        Sign in
-                      </Button>
-                    </Link>
-                  </div>
-                </div>
+                ))}
               </div>
-            </Reveal>
-          </div>
-        </section>
-      </main>
-
-      {/* ── Footer ── */}
-      <footer className="border-t border-slate-200/60 dark:border-white/5">
-        <div className="mx-auto max-w-6xl px-5 py-8 sm:px-8">
-          <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-            <div className="flex items-center gap-2">
-              <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-sky-600 text-white">
-                <Dumbbell size={13} />
-              </div>
-              <span className="font-display text-sm font-bold text-slate-900 dark:text-white">Atlas Gym OS</span>
             </div>
-            <p className="text-xs text-slate-600 dark:text-slate-400">
-              Built for super admins, gym owners, trainers, and members.
-            </p>
           </div>
         </div>
-      </footer>
+      </div>
+
+      {/* Brand logos */}
+      <div className="relative z-10 mt-16 w-full max-w-4xl mx-auto px-4">
+        <p className="text-center text-zinc-600 text-xs uppercase tracking-widest mb-6 font-semibold">Trusted by leading fitness brands</p>
+        <div className="flex flex-wrap items-center justify-center gap-8 opacity-40">
+          {BRANDS.map(b => (
+            <span key={b} className="text-zinc-400 font-black text-sm tracking-widest">{b}</span>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+// ─── Features ─────────────────────────────────────────────────────────────────
+function Features() {
+  return (
+    <section className="bg-black py-24 px-4">
+      <div className="max-w-6xl mx-auto">
+        <div className="text-center mb-14">
+          <h2 className="text-4xl md:text-5xl font-black text-white mb-4">Optimize Your <span className="text-lime-400">Gym Operations</span></h2>
+          <p className="text-zinc-400 max-w-xl mx-auto">Our platform gives you everything needed for tracking revenue, managing members, scheduling classes, and managing trainers.</p>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
+          {FEATURES.map((f) => (
+            <div key={f.title} className="bg-zinc-900 border border-zinc-800 rounded-2xl p-6 hover:border-lime-400/40 transition-all group cursor-pointer">
+              <div className={`w-12 h-12 ${f.color} rounded-xl flex items-center justify-center text-black mb-5 group-hover:scale-110 transition-transform`}>
+                {f.icon}
+              </div>
+              <h3 className="text-white font-bold text-lg mb-2">{f.title}</h3>
+              <p className="text-zinc-500 text-sm leading-relaxed">{f.desc}</p>
+              <div className="mt-5 flex items-center gap-1 text-lime-400 text-sm font-semibold opacity-0 group-hover:opacity-100 transition-opacity">
+                Learn more <IconArrow />
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+// ─── Boost Section ────────────────────────────────────────────────────────────
+function Boost() {
+  return (
+    <section className="bg-zinc-950 py-24 px-4">
+      <div className="max-w-6xl mx-auto">
+        <div className="text-center mb-14">
+          <h2 className="text-4xl md:text-5xl font-black text-white mb-4">Boost Your Gym's <span className="text-lime-400">Success</span></h2>
+          <p className="text-zinc-400 max-w-xl mx-auto">Tools and features to keep your fitness business running smoothly and profitably.</p>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {GYM_CARDS.map((c) => (
+            <div key={c.title} className="bg-zinc-900 rounded-2xl overflow-hidden border border-zinc-800 hover:border-lime-400/30 transition-all group cursor-pointer">
+              <div className="relative h-44 overflow-hidden">
+                <img src={c.img} alt={c.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                <div className="absolute inset-0 bg-gradient-to-t from-zinc-900 via-transparent" />
+              </div>
+              <div className="p-6">
+                <h3 className="text-white font-bold text-xl mb-2">{c.title}</h3>
+                <p className="text-zinc-500 text-sm leading-relaxed mb-4">{c.desc}</p>
+                <a href="#" className="text-lime-400 text-sm font-semibold flex items-center gap-1 hover:gap-2 transition-all">
+                  Learn More <IconArrow />
+                </a>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+// ─── Trainers ─────────────────────────────────────────────────────────────────
+function Trainers() {
+  return (
+    <section className="bg-black py-24 px-4">
+      <div className="max-w-6xl mx-auto">
+        <div className="text-center mb-14">
+          <h2 className="text-4xl md:text-5xl font-black text-white mb-4">Find a <span className="text-lime-400">Trainer</span></h2>
+          <p className="text-zinc-400 max-w-xl mx-auto">Our certified trainers are here to guide you, offering expertise and dedication to help you achieve your fitness goals.</p>
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+          {TRAINERS.map((t) => (
+            <div key={t.name} className="bg-zinc-900 border border-zinc-800 rounded-2xl p-5 flex gap-4 hover:border-lime-400/40 transition-all group cursor-pointer">
+              <div className="relative">
+                <img src={t.img} alt={t.name} className="w-20 h-24 object-cover rounded-xl" />
+                <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-lime-400 rounded-full flex items-center justify-center">
+                  <IconCheck />
+                </div>
+              </div>
+              <div className="flex-1 min-w-0">
+                <h3 className="text-white font-bold text-base">{t.name}</h3>
+                <p className="text-zinc-500 text-xs mb-2">{t.specialty}</p>
+                <StarRating rating={t.rating} />
+                <div className="flex gap-3 mt-2">
+                  <div className="bg-zinc-800 rounded-lg px-2 py-1">
+                    <p className="text-zinc-500 text-xs">Exp</p>
+                    <p className="text-white text-xs font-bold">{t.exp}</p>
+                  </div>
+                  <div className="bg-zinc-800 rounded-lg px-2 py-1">
+                    <p className="text-zinc-500 text-xs">Clients</p>
+                    <p className="text-white text-xs font-bold">{t.clients}</p>
+                  </div>
+                  <div className="bg-zinc-800 rounded-lg px-2 py-1">
+                    <p className="text-zinc-500 text-xs">Rating</p>
+                    <p className="text-lime-400 text-xs font-bold">{t.rating}</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+        <div className="text-center mt-10">
+          <a href="#" className="inline-flex items-center gap-2 bg-lime-400 hover:bg-lime-300 text-black font-bold px-8 py-3.5 rounded-xl transition-all hover:scale-105">
+            View All Trainers <IconArrow />
+          </a>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+// ─── Workout Categories ───────────────────────────────────────────────────────
+function WorkoutCategories() {
+  return (
+    <section className="bg-zinc-950 py-24 px-4">
+      <div className="max-w-6xl mx-auto">
+        <div className="text-center mb-14">
+          <h2 className="text-4xl md:text-5xl font-black text-white mb-4">Workout <span className="text-lime-400">Categories</span></h2>
+          <p className="text-zinc-400 max-w-xl mx-auto">From intense cardio to calming yoga, discover programs designed to meet any fitness goal.</p>
+        </div>
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3">
+          {CATEGORIES.map((c) => (
+            <div key={c.label} className={`${c.color} rounded-2xl p-4 flex flex-col items-center justify-center gap-2 cursor-pointer hover:scale-105 transition-transform border border-current/10`}>
+              <span className="text-3xl">{c.emoji}</span>
+              <span className="text-sm font-semibold text-center">{c.label}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+// ─── Testimonials ─────────────────────────────────────────────────────────────
+function Testimonials() {
+  return (
+    <section className="bg-black py-24 px-4">
+      <div className="max-w-6xl mx-auto">
+        <div className="text-center mb-14">
+          <h2 className="text-4xl md:text-5xl font-black text-white mb-4">What Our <span className="text-lime-400">Clients Say</span></h2>
+          <p className="text-zinc-400 max-w-xl mx-auto">Real gym owners and trainers share how our platform transformed their fitness business operations.</p>
+        </div>
+        <div className="columns-1 sm:columns-2 lg:columns-3 gap-4 space-y-4">
+          {TESTIMONIALS.map((t) => (
+            <div key={t.name} className="bg-zinc-900 border border-zinc-800 rounded-2xl p-5 break-inside-avoid hover:border-lime-400/30 transition-colors">
+              <StarRating rating={t.rating} />
+              <p className="text-zinc-300 text-sm leading-relaxed mt-3 mb-4">"{t.text}"</p>
+              <div className="flex items-center gap-3">
+                <img src={t.img} alt={t.name} className="w-9 h-9 rounded-full object-cover" />
+                <div>
+                  <p className="text-white text-sm font-semibold">{t.name}</p>
+                  <p className="text-zinc-500 text-xs">{t.role}</p>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+// ─── Pricing ──────────────────────────────────────────────────────────────────
+function Pricing() {
+  return (
+    <section className="bg-zinc-950 py-24 px-4">
+      <div className="max-w-5xl mx-auto">
+        <div className="text-center mb-14">
+          <h2 className="text-4xl md:text-5xl font-black text-white mb-4">Easy For Your <span className="text-lime-400">Bank Account</span></h2>
+          <p className="text-zinc-400 max-w-xl mx-auto">Our flexible pricing plans give you access to the features you need without breaking the bank.</p>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+          {PLANS.map((p) => (
+            <div key={p.name} className={`relative bg-zinc-900 border-2 ${p.color} rounded-2xl p-7 flex flex-col ${p.badge ? "scale-100 md:scale-105 shadow-xl shadow-lime-400/10" : ""}`}>
+              {p.badge && (
+                <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 bg-lime-400 text-black text-xs font-black px-4 py-1 rounded-full">
+                  {p.badge}
+                </div>
+              )}
+              <div className="mb-6">
+                {p.name === "Pro Plan" && <span className="text-2xl mr-1">⭐⭐⭐</span>}
+                <h3 className="text-white font-bold text-xl mt-1">{p.name}</h3>
+                <div className="flex items-end gap-1 mt-3">
+                  <span className="text-4xl font-black text-white">{p.price}</span>
+                  {p.period && <span className="text-zinc-500 text-sm mb-1">{p.period}</span>}
+                </div>
+              </div>
+              <ul className="flex-1 space-y-2.5 mb-7">
+                {p.features.map(f => (
+                  <li key={f} className="flex items-center gap-2.5 text-zinc-300 text-sm">
+                    <span className="w-5 h-5 rounded-full bg-lime-400/20 text-lime-400 flex items-center justify-center flex-shrink-0"><IconCheck /></span>
+                    {f}
+                  </li>
+                ))}
+              </ul>
+              <a href="#" className={`${p.btnClass} text-center py-3 rounded-xl font-semibold transition-all hover:scale-105`}>{p.btnText}</a>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+// ─── Gallery ──────────────────────────────────────────────────────────────────
+function Gallery() {
+  return (
+    <section className="bg-black py-16 px-4">
+      <div className="max-w-6xl mx-auto">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+          {GALLERY_IMGS.map((src, i) => (
+            <div key={i} className={`overflow-hidden rounded-xl ${i === 0 || i === 4 ? "row-span-2" : ""}`} style={{height: (i === 0 || i === 4) ? "280px" : "134px"}}>
+              <img src={src} alt={`Gallery ${i+1}`} className="w-full h-full object-cover hover:scale-105 transition-transform duration-500" />
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+// ─── CTA ──────────────────────────────────────────────────────────────────────
+function CTA() {
+  return (
+    <section className="bg-zinc-950 py-24 px-4">
+      <div className="max-w-2xl mx-auto text-center">
+        <div className="flex justify-center gap-1 text-3xl mb-4">
+          🔥🔥🔥
+        </div>
+        <h2 className="text-4xl md:text-5xl font-black text-white mb-4">
+          Ready to <span className="text-lime-400">Get Started</span>
+        </h2>
+        <p className="text-zinc-400 mb-8 text-lg">Take control of your gym's potential with our powerful all-in-one management platform.</p>
+        <div className="flex flex-col sm:flex-row gap-3 justify-center">
+          <a href="#" className="bg-lime-400 hover:bg-lime-300 text-black font-bold px-8 py-3.5 rounded-xl transition-all hover:scale-105 shadow-lg shadow-lime-400/20">
+            Discover a Demo
+          </a>
+          <a href="#" className="bg-zinc-800 hover:bg-zinc-700 text-white font-semibold px-8 py-3.5 rounded-xl border border-zinc-700 transition-colors">
+            Book a Demo
+          </a>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+// ─── Footer ───────────────────────────────────────────────────────────────────
+function Footer() {
+  return (
+    <footer className="bg-black border-t border-zinc-900 pt-16 pb-8 px-4">
+      <div className="max-w-6xl mx-auto">
+        <div className="grid grid-cols-2 md:grid-cols-6 gap-8 mb-12">
+          <div className="col-span-2 md:col-span-1">
+            <div className="flex items-center gap-2 mb-4">
+              <div className="w-7 h-7 bg-lime-400 rounded flex items-center justify-center">
+                <span className="text-black font-black text-xs">G</span>
+              </div>
+              <span className="text-white font-bold text-lg">go.Jim</span>
+            </div>
+            <p className="text-zinc-600 text-xs leading-relaxed">The all-in-one gym management platform for modern fitness businesses.</p>
+          </div>
+          {FOOTER_COLS.map((col) => (
+            <div key={col.title}>
+              <h4 className="text-white font-bold text-sm mb-4">{col.title}</h4>
+              <ul className="space-y-2">
+                {col.links.map(l => (
+                  <li key={l}>
+                    <a href="#" className="text-zinc-600 hover:text-zinc-300 text-xs transition-colors">{l}</a>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ))}
+        </div>
+        <div className="border-t border-zinc-900 pt-6 flex flex-col md:flex-row items-center justify-between gap-3">
+          <p className="text-zinc-700 text-xs">© 2024 go.Jim. All rights reserved.</p>
+          <div className="flex gap-5">
+            {["Privacy Policy","Terms of Service","Cookie Policy"].map(l => (
+              <a key={l} href="#" className="text-zinc-700 hover:text-zinc-500 text-xs transition-colors">{l}</a>
+            ))}
+          </div>
+        </div>
+      </div>
+    </footer>
+  );
+}
+
+// ─── Home Page ────────────────────────────────────────────────────────────────
+export default function Home() {
+  return (
+    <div className="bg-black min-h-screen">
+      <Navbar />
+      <Hero />
+      <Features />
+      <Boost />
+      <Trainers />
+      <WorkoutCategories />
+      <Testimonials />
+      <Pricing />
+      <Gallery />
+      <CTA />
+      <Footer />
     </div>
-  )
+  );
 }
